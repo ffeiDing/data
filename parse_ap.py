@@ -4,7 +4,9 @@ import re
 import zhconv
 from pypinyin import lazy_pinyin
 
-workbook = openpyxl.load_workbook("data/rubbing.xlsx")
+data = {}
+
+workbook = openpyxl.load_workbook("data/a_service_ap_log1.xlsx")
 # workbook = openpyxl.load_workbook("data/METADATA.xlsx")
 shenames = workbook.sheetnames
 # print(shenames)
@@ -14,43 +16,88 @@ worksheet = workbook["Result 1"]
 
 rows = worksheet.max_row
 columns = worksheet.max_column
-# print(rows, columns) #3
-
-data = {}
+print(rows, columns) #3
 
 first_row = True
 idx = 0
+pre_time = "-1"
 
 for row in worksheet.rows: 
     if first_row:
         first_row = False
         continue
     else:
-        xml = row[1].value
-        res = re.findall(r"title titleAttribute=\"(.*?)\"", xml)
-        # res = re.findall(r"\<gravureDesc\>(.*?)\<\/gravureDesc\>", xml)
+        ap_id = row[1].value
+        num = row[2].value
+        time = row[3].value
+        if pre_time == "-1":
+            data.setdefault(time, {})
+            data[time][ap_id] = num
+            pre_time = time
+        else:
+            minute_pre = int(pre_time.split(":")[-2])
+            minute_cur = int(time.split(":")[-2])
+            # print(minute_cur, minute_pre)
+            if minute_cur == minute_pre or minute_cur-minute_pre <= 2 or (minute_pre == 59 and minute_cur <= 1) or (minute_pre == 58 and minute_cur == 0):
+                data[pre_time][ap_id] = num
+            else:
+                data.setdefault(time, {})
+                data[time][ap_id] = num
+                pre_time = time
 
-        # res = re.findall(r"historyattribute=\"\"", xml)
-        # if len(res) == 0:
-        #     continue
 
-        # res = re.findall(r"\<calis:titlevalue\>太白酒(.+?)\<\/calis:titlevalue\>", xml)
-        # res = re.findall(r"\<calis:title titleattribute=\"正題名及説明\"\>(.+?)\<\/calis:title\>", xml)
-        # if len(res) > 0:
-        #     print(row[0].value, xml)
+worksheet = workbook["Result 2"]
+# print(worksheet) 
 
-        if len(res) > 1:
-            idx += 1
-        if len(res) > 0:
-            for str in res:
-                # str = str.strip()
-                # str = hant_2_hans(str)
-                # str = ''.join(lazy_pinyin(str))
-                data.setdefault(str, 0)
-                data[str] += 1
+rows = worksheet.max_row
+columns = worksheet.max_column
+print(rows, columns) #3
 
-for key in data.keys():
-    print(key, data[key])
+first_row = True
 
-print(idx)
-        
+for row in worksheet.rows: 
+    if first_row:
+        first_row = False
+        continue
+    else:
+        ap_id = row[1].value
+        num = row[2].value
+        time = row[3].value
+        if pre_time == "-1":
+            data.setdefault(time, {})
+            data[time][ap_id] = num
+            pre_time = time
+        else:
+            minute_pre = int(pre_time.split(":")[-2])
+            minute_cur = int(time.split(":")[-2])
+            # print(minute_cur, minute_pre)
+            if minute_cur == minute_pre or (minute_cur > minute_pre and minute_cur-minute_pre <= 2) or (minute_pre == 59 and minute_cur <= 1) or (minute_pre == 58 and minute_cur == 0):
+                data[pre_time][ap_id] = num
+            else:
+                data.setdefault(time, {})
+                data[time][ap_id] = num
+                pre_time = time
+# print(data)
+
+
+data_sum = {}
+for time in data.keys():
+    for ap_id in data[time].keys():
+        data_sum.setdefault(time, 0)
+        data_sum[time] += data[time][ap_id]
+
+import csv
+
+def load_dic(name):
+    with open(name, 'rb') as f:
+        return pickle.load(f)
+
+csvFile=open("data/ap.csv",'w',newline='')
+writer=csv.writer(csvFile)
+writer.writerow(("time", "num"))
+
+
+for time, num in data_sum.items():
+    writer.writerow((time, num))
+
+csvFile.close()

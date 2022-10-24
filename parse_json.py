@@ -3,11 +3,11 @@
 import openpyxl
 import json
 
-workbook = openpyxl.load_workbook("data/chi0706.xlsx")
+workbook = openpyxl.load_workbook("data/user50000+.xlsx")
 shenames = workbook.sheetnames
 # print(shenames)
 
-worksheet = workbook["Sheet1"]
+worksheet = workbook["user50000+"]
 # print(worksheet) 
 
 rows = worksheet.max_row
@@ -39,7 +39,8 @@ for row in worksheet.rows:
         jsonb = json.loads(row[17].value)["attrValueMap"]
         for idx in range(len(cn_attr)):
             if en_attr[idx] in jsonb:
-                attr_value = jsonb[en_attr[idx]]["value"]
+                if "value" in jsonb[en_attr[idx]]:
+                    attr_value = jsonb[en_attr[idx]]["value"]
             else:
                 attr_value = ""
             clean_row.append(attr_value)
@@ -48,4 +49,4 @@ for row in worksheet.rows:
         clean_worksheet.cell(row_idx+1, col_idx+1, clean_row[col_idx])
     row_idx = row_idx + 1
 
-workbook.save(filename='data/b.xlsx')
+workbook.save(filename='data/processed_50000+.xlsx')
