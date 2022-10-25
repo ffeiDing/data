@@ -3,11 +3,11 @@
 import openpyxl
 import json
 
-workbook = openpyxl.load_workbook("data/user50000+.xlsx")
+workbook = openpyxl.load_workbook("data/user50000.xlsx")
 shenames = workbook.sheetnames
 # print(shenames)
 
-worksheet = workbook["user50000+"]
+worksheet = workbook["user50000"]
 # print(worksheet) 
 
 rows = worksheet.max_row
@@ -49,4 +49,4 @@ for row in worksheet.rows:
         clean_worksheet.cell(row_idx+1, col_idx+1, clean_row[col_idx])
     row_idx = row_idx + 1
 
-workbook.save(filename='data/processed_50000+.xlsx')
+workbook.save(filename='data/processed_50000.xlsx')

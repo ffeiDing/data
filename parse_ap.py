@@ -38,7 +38,7 @@ for row in worksheet.rows:
             minute_pre = int(pre_time.split(":")[-2])
             minute_cur = int(time.split(":")[-2])
             # print(minute_cur, minute_pre)
-            if minute_cur == minute_pre or minute_cur-minute_pre <= 2 or (minute_pre == 59 and minute_cur <= 1) or (minute_pre == 58 and minute_cur == 0):
+            if minute_cur == minute_pre or (minute_cur > minute_pre and minute_cur-minute_pre <= 2) or (minute_pre == 59 and minute_cur <= 1) or (minute_pre == 58 and minute_cur == 0):
                 data[pre_time][ap_id] = num
             else:
                 data.setdefault(time, {})
